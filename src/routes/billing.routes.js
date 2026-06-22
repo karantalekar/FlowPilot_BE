@@ -1,0 +1,16 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.billingRouter = void 0;
+const express_1 = require("express");
+const billing_controller_1 = require("../controllers/billing.controller");
+const auth_middleware_1 = require("../middlewares/auth.middleware");
+const rbac_middleware_1 = require("../middlewares/rbac.middleware");
+const tenant_middleware_1 = require("../middlewares/tenant.middleware");
+const validate_middleware_1 = require("../middlewares/validate.middleware");
+const billing_validation_1 = require("../validations/billing.validation");
+exports.billingRouter = (0, express_1.Router)();
+exports.billingRouter.use(auth_middleware_1.authenticate, tenant_middleware_1.requireTenant);
+exports.billingRouter.post('/create-subscription', (0, rbac_middleware_1.requireMinRole)('admin'), (0, validate_middleware_1.validate)(billing_validation_1.checkoutSchema), billing_controller_1.billingController.createSubscription);
+exports.billingRouter.post('/verify-payment', (0, rbac_middleware_1.requireMinRole)('admin'), (0, validate_middleware_1.validate)(billing_validation_1.verifyPaymentSchema), billing_controller_1.billingController.verifyPayment);
+exports.billingRouter.get('/subscription', billing_controller_1.billingController.subscription);
+exports.billingRouter.get('/payment-history', billing_controller_1.billingController.paymentHistory);

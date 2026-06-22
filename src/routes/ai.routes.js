@@ -1,0 +1,17 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.aiRouter = void 0;
+const express_1 = require("express");
+const ai_controller_1 = require("../controllers/ai.controller");
+const auth_middleware_1 = require("../middlewares/auth.middleware");
+const tenant_middleware_1 = require("../middlewares/tenant.middleware");
+const upload_middleware_1 = require("../middlewares/upload.middleware");
+const validate_middleware_1 = require("../middlewares/validate.middleware");
+const ai_validation_1 = require("../validations/ai.validation");
+exports.aiRouter = (0, express_1.Router)();
+exports.aiRouter.use(auth_middleware_1.authenticate, tenant_middleware_1.requireTenant);
+exports.aiRouter.post('/chat', (0, validate_middleware_1.validate)(ai_validation_1.chatSchema), ai_controller_1.aiController.chat);
+exports.aiRouter.get('/conversations', (0, validate_middleware_1.validate)(ai_validation_1.listConversationSchema), ai_controller_1.aiController.conversations);
+exports.aiRouter.post('/documents/upload', upload_middleware_1.upload.single('document'), ai_controller_1.aiController.uploadDocument);
+exports.aiRouter.post('/documents/ask', (0, validate_middleware_1.validate)(ai_validation_1.askDocumentSchema), ai_controller_1.aiController.askDocument);
+exports.aiRouter.post('/reports/generate', (0, validate_middleware_1.validate)(ai_validation_1.generateReportSchema), ai_controller_1.aiController.generateReport);
