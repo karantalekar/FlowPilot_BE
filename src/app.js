@@ -38,6 +38,7 @@ exports.app.use(express_1.default.json({ limit: '2mb' }));
 exports.app.use(express_1.default.urlencoded({ extended: true }));
 exports.app.use((0, express_mongo_sanitize_1.default)());
 exports.app.use(rate_limit_middleware_1.apiLimiter);
+exports.app.get('/', (_req, res) => res.json({ message: `${env_1.env.APP_NAME} backend is running` }));
 exports.app.get('/health', (_req, res) => res.json({ status: 'ok', uptime: process.uptime() }));
 exports.app.use('/docs', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swagger_1.swaggerSpec));
 exports.app.use('/api/v1', routes_1.apiRouter);
