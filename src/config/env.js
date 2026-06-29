@@ -34,6 +34,8 @@ const envSchema = zod_1.z.object({
     RAZORPAY_PLAN_BUSINESS: zod_1.z.string().optional(),
     SMTP_HOST: zod_1.z.string().optional(),
     SMTP_PORT: zod_1.z.coerce.number().default(587),
+    SMTP_SECURE: zod_1.z.coerce.boolean().default(false),
+    SMTP_TIMEOUT_MS: zod_1.z.coerce.number().default(15000),
     SMTP_USER: zod_1.z.string().optional(),
     SMTP_PASS: zod_1.z.string().optional(),
     EMAIL_FROM: zod_1.z.string().default('no-reply@flowpilot.local'),
