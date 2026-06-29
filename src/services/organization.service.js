@@ -11,9 +11,10 @@ const email_service_1 = require("./email.service");
 const email_template_service_1 = require("./email-template.service");
 const env_1 = require("../config/env");
 const slugify = (value) => value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const INVITE_EMAIL_TIMEOUT_MS = 15000;
 const sendInviteEmail = (to, subject, html, attachments = []) => Promise.race([
     email_service_1.emailService.send(to, subject, html, attachments),
-    new Promise((resolve) => setTimeout(() => resolve(false), 5000))
+    new Promise((resolve) => setTimeout(() => resolve(false), INVITE_EMAIL_TIMEOUT_MS))
 ]);
 exports.organizationService = {
     members(organizationId) {

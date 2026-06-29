@@ -7,15 +7,19 @@ exports.emailService = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const env_1 = require("../config/env");
 const logger_1 = require("../config/logger");
+const SMTP_TIMEOUT_MS = 15000;
+const smtpPassword = env_1.env.SMTP_HOST?.includes('gmail')
+    ? env_1.env.SMTP_PASS?.replace(/\s+/g, '')
+    : env_1.env.SMTP_PASS;
 const transporter = env_1.env.SMTP_HOST && env_1.env.SMTP_USER && env_1.env.SMTP_PASS
     ? nodemailer_1.default.createTransport({
         host: env_1.env.SMTP_HOST,
         port: env_1.env.SMTP_PORT,
         secure: env_1.env.SMTP_PORT === 465,
-        auth: { user: env_1.env.SMTP_USER, pass: env_1.env.SMTP_PASS },
-        connectionTimeout: 5000,
-        greetingTimeout: 5000,
-        socketTimeout: 5000
+        auth: { user: env_1.env.SMTP_USER, pass: smtpPassword },
+        connectionTimeout: SMTP_TIMEOUT_MS,
+        greetingTimeout: SMTP_TIMEOUT_MS,
+        socketTimeout: SMTP_TIMEOUT_MS
     })
     : null;
 exports.emailService = {
