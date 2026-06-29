@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.buildInvitationEmail = void 0;
+const path = require("path");
 
 const escapeHtml = (value) =>
   String(value)
@@ -12,7 +13,6 @@ const escapeHtml = (value) =>
 
 const buildInvitationEmail = ({
   appName,
-  clientUrl,
   recipientName,
   role,
   workspaceName,
@@ -23,7 +23,8 @@ const buildInvitationEmail = ({
   const safeRole = escapeHtml(role.charAt(0).toUpperCase() + role.slice(1));
   const safeWorkspace = escapeHtml(workspaceName);
   const safeInviteUrl = escapeHtml(inviteUrl);
-  const logoUrl = `${clientUrl.replace(/\/$/, "")}/favicon.png`;
+  const logoCid = "flowpilot-logo";
+  const logoPath = path.resolve(__dirname, "../../../public/favicon.png");
   return {
     subject: `You're invited to join ${String(workspaceName).replace(/[\r\n]/g, " ")}`,
     html: `<!doctype html>
@@ -36,8 +37,8 @@ const buildInvitationEmail = ({
       <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border:1px solid #e7e5e4;border-radius:20px;overflow:hidden;box-shadow:0 12px 32px rgba(76,29,149,.08);">
         <tr><td style="height:8px;background:linear-gradient(90deg,#8b5cf6,#ec4899,#fb923c);"></td></tr>
         <tr><td align="center" style="padding:34px 40px 16px;">
-          <img src="${escapeHtml(logoUrl)}" width="76" height="76" alt="${safeAppName}" style="display:block;width:76px;height:76px;object-fit:contain;border:0;">
-          <div style="margin-top:10px;font-size:22px;font-weight:700;color:#312e81;">${safeAppName}</div>
+          <img src="cid:${logoCid}" width="96" height="80" alt="${safeAppName} logo" style="display:block;width:96px;height:80px;object-fit:contain;border:0;outline:none;text-decoration:none;">
+          <div style="margin-top:10px;font-size:22px;font-weight:700;color:#1a1a1a;">${safeAppName}</div>
         </td></tr>
         <tr><td style="padding:12px 40px 36px;">
           <h1 style="margin:0 0 16px;text-align:center;font-size:28px;line-height:1.25;color:#111827;">You’re invited to collaborate</h1>
@@ -58,6 +59,7 @@ const buildInvitationEmail = ({
   </table>
 </body>
 </html>`,
+    attachments: [{ filename: "flowpilot-logo.png", path: logoPath, cid: logoCid }],
   };
 };
 exports.buildInvitationEmail = buildInvitationEmail;

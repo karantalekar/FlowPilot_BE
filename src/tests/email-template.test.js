@@ -11,7 +11,14 @@ describe('invitation email template', () => {
             inviteUrl: 'https://app.example.com/auth/accept-invite?token=safe-token'
         });
         expect(email.subject).toBe("You're invited to join Operations");
-        expect(email.html).toContain('https://app.example.com/favicon.png');
+        expect(email.html).toContain('src="cid:flowpilot-logo"');
+        expect(email.html).toContain('alt="Workspace App logo"');
+        expect(email.html).toContain('width="96" height="80"');
+        expect(email.attachments).toHaveLength(1);
+        expect(email.attachments[0]).toMatchObject({ filename: 'flowpilot-logo.png', cid: 'flowpilot-logo' });
+        expect(email.attachments[0].path).toContain('public');
+        expect(email.attachments[0].path).toContain('favicon.png');
+        expect(email.html).toContain('color:#1a1a1a;">Workspace App</div>');
         expect(email.html).toContain('Alex Admin');
         expect(email.html).toContain('Manager');
         expect(email.html).toContain('Accept invitation');

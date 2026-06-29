@@ -16,7 +16,7 @@ const start = async () => {
     await (0, database_1.connectDatabase)();
     (0, sockets_1.initializeSocket)(server);
     (0, reminder_job_1.startReminderJob)();
-    server.listen(env_1.env.PORT, () => logger_1.logger.info(`${env_1.env.APP_NAME} API listening on ${env_1.env.PORT}`));
+    server.listen(env_1.env.PORT, '0.0.0.0', () => logger_1.logger.info(`${env_1.env.APP_NAME} API listening on ${env_1.env.PORT}`));
 };
 const shutdown = async (signal) => {
     logger_1.logger.info(`${signal} received, shutting down`);

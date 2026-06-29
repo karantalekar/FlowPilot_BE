@@ -12,22 +12,37 @@ const transporter = env_1.env.SMTP_HOST && env_1.env.SMTP_USER && env_1.env.SMTP
         host: env_1.env.SMTP_HOST,
         port: env_1.env.SMTP_PORT,
         secure: env_1.env.SMTP_PORT === 465,
-        auth: { user: env_1.env.SMTP_USER, pass: env_1.env.SMTP_PASS }
+        auth: { user: env_1.env.SMTP_USER, pass: env_1.env.SMTP_PASS },
+        connectionTimeout: 5000,
+        greetingTimeout: 5000,
+        socketTimeout: 5000
     })
     : null;
 exports.emailService = {
-    async send(to, subject, html) {
+    async send(to, subject, html, attachments = []) {
         if (!transporter) {
             logger_1.logger.info(`Email skipped: ${subject} -> ${to}`);
             return false;
         }
-        await transporter.sendMail({ from: env_1.env.EMAIL_FROM, to, subject, html });
-        return true;
+        try {
+            await transporter.sendMail({ from: env_1.env.EMAIL_FROM, to, subject, html, attachments });
+            return true;
+        }
+        catch (error) {
+            logger_1.logger.error(`Email failed: ${subject} -> ${to}`, error);
+            return false;
+        }
     },
     sendVerificationEmail(email, token) {
         return this.send(email, 'Verify your FlowPilot email', `<p>Use this token to verify your email: ${token}</p>`);
     },
     sendPasswordResetEmail(email, token) {
-        return this.send(email, 'Reset your FlowPilot password', `<p>Use this token to reset your password: ${token}</p>`);
+        const resetUrl = `${env_1.env.CLIENT_URL.replace(/\/$/, '')}/auth/reset-password?token=${encodeURIComponent(token)}`;
+        return this.send(email, 'Reset your FlowPilot password', `
+<p>You requested a password reset for your FlowPilot account.</p>
+<p><a href="${resetUrl}">Reset your password</a></p>
+<p>This password reset link expires in 30 minutes.</p>
+<p>If you did not request this, you can safely ignore this email.</p>
+`);
     }
 };

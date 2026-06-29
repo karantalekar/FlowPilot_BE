@@ -11,6 +11,10 @@ const email_service_1 = require("./email.service");
 const email_template_service_1 = require("./email-template.service");
 const env_1 = require("../config/env");
 const slugify = (value) => value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const sendInviteEmail = (to, subject, html, attachments = []) => Promise.race([
+    email_service_1.emailService.send(to, subject, html, attachments),
+    new Promise((resolve) => setTimeout(() => resolve(false), 5000))
+]);
 exports.organizationService = {
     members(organizationId) {
         return user_model_1.User.find({ organization: organizationId }).sort('name');
@@ -28,8 +32,8 @@ exports.organizationService = {
         const user = await user_model_1.User.create({ name: input.name, email: input.email, role: input.role, organization: organizationId, provider: 'local', passwordResetToken: (0, tokens_1.hashToken)(inviteToken), passwordResetExpires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) });
         const inviteUrl = `${env_1.env.CLIENT_URL}/auth/accept-invite?token=${inviteToken}`;
         const invitationEmail = (0, email_template_service_1.buildInvitationEmail)({ appName: env_1.env.APP_NAME, clientUrl: env_1.env.CLIENT_URL, recipientName: input.name, role: input.role, workspaceName: organization.name, inviteUrl });
-        const emailSent = await email_service_1.emailService.send(input.email, invitationEmail.subject, invitationEmail.html);
-        return { user, emailSent, ...(!emailSent && env_1.env.NODE_ENV === 'development' ? { inviteUrl } : {}) };
+        const emailSent = await sendInviteEmail(input.email, invitationEmail.subject, invitationEmail.html, invitationEmail.attachments);
+        return { user, emailSent, inviteUrl };
     },
     async updateMember(organizationId, memberId, data) {
         const org = await organization_model_1.Organization.findById(organizationId);

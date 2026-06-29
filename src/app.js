@@ -25,8 +25,21 @@ const routes_1 = require("./routes");
 exports.app = (0, express_1.default)();
 exports.app.set('trust proxy', 1);
 exports.app.use((0, helmet_1.default)());
+const allowedOrigins = new Set([
+    env_1.env.CLIENT_URL,
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:3001'
+]);
+const isLocalDevOrigin = (origin) => env_1.env.NODE_ENV !== 'production' &&
+    /^http:\/\/(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3})(:\d+)?$/.test(origin);
 exports.app.use((0, cors_1.default)({
-    origin: env_1.env.CLIENT_URL,
+    origin(origin, callback) {
+        if (!origin || allowedOrigins.has(origin) || isLocalDevOrigin(origin))
+            return callback(null, true);
+        return callback(null, false);
+    },
     credentials: true
 }));
 exports.app.use((0, compression_1.default)());
