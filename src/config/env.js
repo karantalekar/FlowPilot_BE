@@ -7,12 +7,13 @@ exports.env = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
 const zod_1 = require("zod");
 dotenv_1.default.config();
+const normalizeUrl = (value) => value.trim().replace(/\/+$/, '');
 const envSchema = zod_1.z.object({
     NODE_ENV: zod_1.z.enum(['development', 'test', 'production']).default('development'),
     PORT: zod_1.z.coerce.number().default(5000),
     APP_NAME: zod_1.z.string().default('FlowPilot'),
-    CLIENT_URL: zod_1.z.string().default('http://localhost:3000'),
-    API_BASE_URL: zod_1.z.string().default('http://localhost:5000'),
+    CLIENT_URL: zod_1.z.string().default('http://localhost:3000').transform(normalizeUrl),
+    API_BASE_URL: zod_1.z.string().default('http://localhost:5000').transform(normalizeUrl),
     MONGODB_URI: zod_1.z.string().min(1).default('mongodb://localhost:27017/flowpilot'),
     REDIS_URL: zod_1.z.string().default('redis://localhost:6379'),
     JWT_ACCESS_SECRET: zod_1.z.string().min(12).default('development-access-secret'),
