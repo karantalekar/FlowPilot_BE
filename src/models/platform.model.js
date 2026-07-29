@@ -21,8 +21,10 @@ const subscriptionSchema = new Schema({
 }, { timestamps: true });
 const paymentSchema = new Schema({
     organization: { type: Schema.Types.ObjectId, ref: 'Organization', required: true, index: true },
+    payer: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     subscription: { type: Schema.Types.ObjectId, ref: 'Subscription' }, amount: { type: Number, required: true, min: 0 },
     currency: { type: String, default: 'INR' }, method: String,
+    plan: { type: String, enum: ['pro', 'business'] },
     transactionId: { type: String, required: true, unique: true, trim: true },
     status: { type: String, enum: ['pending', 'verified', 'rejected'], default: 'pending', index: true },
     proof: { storageKey: String, originalName: String, mimeType: String, size: Number },

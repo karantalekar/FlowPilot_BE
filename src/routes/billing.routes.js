@@ -12,5 +12,6 @@ exports.billingRouter = (0, express_1.Router)();
 exports.billingRouter.use(auth_middleware_1.authenticate, tenant_middleware_1.requireTenant);
 exports.billingRouter.post('/create-subscription', (0, rbac_middleware_1.requireMinRole)('admin'), (0, validate_middleware_1.validate)(billing_validation_1.checkoutSchema), billing_controller_1.billingController.createSubscription);
 exports.billingRouter.post('/verify-payment', (0, rbac_middleware_1.requireMinRole)('admin'), (0, validate_middleware_1.validate)(billing_validation_1.verifyPaymentSchema), billing_controller_1.billingController.verifyPayment);
+exports.billingRouter.post('/upi-payment', (0, rbac_middleware_1.requireMinRole)('admin'), (0, validate_middleware_1.validate)(billing_validation_1.submitUpiPaymentSchema), billing_controller_1.billingController.submitUpiPayment);
 exports.billingRouter.get('/subscription', billing_controller_1.billingController.subscription);
 exports.billingRouter.get('/payment-history', billing_controller_1.billingController.paymentHistory);

@@ -132,8 +132,19 @@ exports.platformService = {
         if (input.action === 'change_plan') { if (!input.planId) throw new ApiError(400, 'planId is required'); item.plan = input.planId; if (input.billingCycle) item.billingCycle = input.billingCycle; }
         await item.save(); await audit(admin.id, `SUBSCRIPTION_${input.action.toUpperCase()}`, 'Subscription', item._id, context); return item.populate('organization plan');
     },
-    payments: q => list(PlatformPayment, q, filterFrom(q, ['transactionId']), 'organization subscription'),
-    async decidePayment(id, input, admin, context) { const item = await PlatformPayment.findById(id); if (!item) throw new ApiError(404, 'Payment not found'); if (item.status !== 'pending') throw new ApiError(409, 'Payment has already been reviewed'); item.status = input.decision; item.verifiedBy = admin.id; item.verifiedAt = new Date(); item.rejectionReason = input.reason; await item.save(); await audit(admin.id, input.decision === 'verified' ? 'PAYMENT_VERIFIED' : 'PAYMENT_REJECTED', 'PlatformPayment', item._id, context, { reason: input.reason }); return item; },
+    payments: q => list(PlatformPayment, q, filterFrom(q, ['transactionId']), 'organization subscription payer'),
+    async decidePayment(id, input, admin, context) {
+        const item = await PlatformPayment.findById(id);
+        if (!item) throw new ApiError(404, 'Payment not found');
+        if (item.status !== 'pending') throw new ApiError(409, 'Payment has already been reviewed');
+        item.status = input.decision; item.verifiedBy = admin.id; item.verifiedAt = new Date(); item.rejectionReason = input.reason;
+        await item.save();
+        if (input.decision === 'verified' && item.plan) {
+            await Organization.findByIdAndUpdate(item.organization, { plan: item.plan, subscriptionStatus: 'active' });
+        }
+        await audit(admin.id, input.decision === 'verified' ? 'PAYMENT_VERIFIED' : 'PAYMENT_REJECTED', 'PlatformPayment', item._id, context, { reason: input.reason, transactionId: item.transactionId, payer: item.payer, plan: item.plan });
+        return item.populate('organization payer');
+    },
     invoices: q => list(Invoice, q, filterFrom(q, ['number']), 'organization subscription'),
     async invoiceStatus(id, status, admin, context) { const item = await Invoice.findByIdAndUpdate(id, { status, ...(status === 'paid' ? { paidAt: new Date() } : {}) }, { new: true }); if (!item) throw new ApiError(404, 'Invoice not found'); await audit(admin.id, `INVOICE_${status.toUpperCase()}`, 'Invoice', item._id, context); return item; },
     activities: q => list(PlatformActivity, q, filterFrom(q, ['action', 'entity']), 'actor'),

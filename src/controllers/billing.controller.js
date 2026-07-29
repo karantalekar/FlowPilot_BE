@@ -11,6 +11,9 @@ exports.billingController = {
     verifyPayment: (0, async_handler_1.asyncHandler)(async (req, res) => {
         (0, api_response_1.sendSuccess)(res, await billing_service_1.billingService.verifyPayment(req.tenantId, req.body));
     }),
+    submitUpiPayment: (0, async_handler_1.asyncHandler)(async (req, res) => {
+        (0, api_response_1.sendSuccess)(res, await billing_service_1.billingService.submitUpiPayment(req.tenantId, req.auth.userId, req.body), 'UPI payment submitted for verification', 201);
+    }),
     webhook: (0, async_handler_1.asyncHandler)(async (req, res) => {
         (0, api_response_1.sendSuccess)(res, await billing_service_1.billingService.handleWebhook(req.body, req.headers['x-razorpay-signature']));
     }),

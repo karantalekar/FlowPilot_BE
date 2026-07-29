@@ -9,6 +9,8 @@ const http_status_1 = __importDefault(require("http-status"));
 const env_1 = require("../config/env");
 const billing_model_1 = require("../models/billing.model");
 const organization_model_1 = require("../models/organization.model");
+const platform_model_1 = require("../models/platform.model");
+const user_model_1 = require("../models/user.model");
 const api_error_1 = require("../utils/api-error");
 const subscription_middleware_1 = require("../middlewares/subscription.middleware");
 
@@ -16,6 +18,7 @@ const planIdMap = {
     pro: env_1.env.RAZORPAY_PLAN_PRO,
     business: env_1.env.RAZORPAY_PLAN_BUSINESS
 };
+const upiPlanAmounts = { pro: 999, business: 2999 };
 const isConfigured = () => Boolean(env_1.env.RAZORPAY_KEY_ID && env_1.env.RAZORPAY_KEY_SECRET);
 const razorpayRequest = async (path, options = {}) => {
     if (!isConfigured())
@@ -112,6 +115,27 @@ exports.billingService = {
         ]);
         return { verified: true, plan };
     },
+    async submitUpiPayment(organizationId, userId, input) {
+        const [organization, payer] = await Promise.all([
+            organization_model_1.Organization.findById(organizationId),
+            user_model_1.User.findOne({ _id: userId, organization: organizationId })
+        ]);
+        if (!organization || !payer)
+            throw new api_error_1.ApiError(http_status_1.default.NOT_FOUND, 'Payer or organization not found');
+        const transactionId = input.transactionId.trim().toUpperCase();
+        if (await platform_model_1.PlatformPayment.exists({ transactionId }))
+            throw new api_error_1.ApiError(http_status_1.default.CONFLICT, 'This UPI transaction ID has already been submitted');
+        return platform_model_1.PlatformPayment.create({
+            organization: organizationId,
+            payer: payer._id,
+            amount: upiPlanAmounts[input.plan],
+            currency: 'INR',
+            method: 'UPI',
+            plan: input.plan,
+            transactionId,
+            status: 'pending'
+        });
+    },
     async handleWebhook(rawBody, signature) {
         if (!env_1.env.RAZORPAY_WEBHOOK_SECRET)
             throw new api_error_1.ApiError(http_status_1.default.SERVICE_UNAVAILABLE, 'Razorpay webhook is not configured');
@@ -153,6 +177,19 @@ exports.billingService = {
         return { ...organization.toObject(), ...(0, subscription_middleware_1.getTrialStatus)(organization) };
     },
     paymentHistory(organizationId) {
-        return billing_model_1.PaymentHistory.find({ organization: organizationId }).sort('-createdAt');
+        return Promise.all([
+            billing_model_1.PaymentHistory.find({ organization: organizationId }).lean(),
+            platform_model_1.PlatformPayment.find({ organization: organizationId }).lean()
+        ]).then(([gateway, upi]) => [
+            ...gateway,
+            ...upi.map(payment => ({
+                ...payment,
+                amount: payment.amount * 100,
+                status: payment.status,
+                paymentMethod: payment.method,
+                transactionId: payment.transactionId,
+                plan: payment.plan
+            }))
+        ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
     }
 };
