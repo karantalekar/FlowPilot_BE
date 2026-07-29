@@ -11,9 +11,11 @@ const logger_1 = require("./config/logger");
 const redis_1 = require("./config/redis");
 const reminder_job_1 = require("./jobs/reminder.job");
 const sockets_1 = require("./sockets");
+const platform_service_1 = require("./services/platform.service");
 const server = http_1.default.createServer(app_1.app);
 const start = async () => {
     await (0, database_1.connectDatabase)();
+    await platform_service_1.platformService.bootstrap();
     (0, sockets_1.initializeSocket)(server);
     (0, reminder_job_1.startReminderJob)();
     server.listen(env_1.env.PORT, '0.0.0.0', () => logger_1.logger.info(`${env_1.env.APP_NAME} API listening on ${env_1.env.PORT}`));

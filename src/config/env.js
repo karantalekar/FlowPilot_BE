@@ -18,6 +18,14 @@ const envSchema = zod_1.z.object({
     REDIS_URL: zod_1.z.string().default('redis://localhost:6379'),
     JWT_ACCESS_SECRET: zod_1.z.string().min(12).default('development-access-secret'),
     JWT_REFRESH_SECRET: zod_1.z.string().min(12).default('development-refresh-secret'),
+    PLATFORM_JWT_ACCESS_SECRET: zod_1.z.string().min(12).default('development-platform-access-secret'),
+    PLATFORM_JWT_REFRESH_SECRET: zod_1.z.string().min(12).default('development-platform-refresh-secret'),
+    PLATFORM_JWT_ACCESS_EXPIRES_IN: zod_1.z.string().default('10m'),
+    PLATFORM_JWT_REFRESH_EXPIRES_IN: zod_1.z.string().default('12h'),
+    PLATFORM_ADMIN_EMAIL: zod_1.z.string().email().optional(),
+    PLATFORM_ADMIN_PASSWORD: zod_1.z.string().min(12).optional(),
+    PLATFORM_ADMIN_NAME: zod_1.z.string().default('Platform Owner'),
+    PLATFORM_SETUP_KEY: zod_1.z.string().min(32).optional(),
     JWT_ACCESS_EXPIRES_IN: zod_1.z.string().default('15m'),
     JWT_REFRESH_EXPIRES_IN: zod_1.z.string().default('30d'),
     COOKIE_SECRET: zod_1.z.string().default('change-me'),
@@ -38,6 +46,8 @@ const envSchema = zod_1.z.object({
     SMTP_TIMEOUT_MS: zod_1.z.coerce.number().default(15000),
     SMTP_USER: zod_1.z.string().optional(),
     SMTP_PASS: zod_1.z.string().optional(),
+    RESEND_API_KEY: zod_1.z.string().optional(),
+    RESEND_FROM_EMAIL: zod_1.z.string().optional(),
     EMAIL_FROM: zod_1.z.string().default('no-reply@flowpilot.local'),
     UPLOAD_DIR: zod_1.z.string().default('uploads'),
     MAX_FILE_SIZE_MB: zod_1.z.coerce.number().default(20)
@@ -52,6 +62,8 @@ if (parsed.data.NODE_ENV === 'production') {
         ['JWT_ACCESS_SECRET', parsed.data.JWT_ACCESS_SECRET],
         ['JWT_REFRESH_SECRET', parsed.data.JWT_REFRESH_SECRET],
         ['COOKIE_SECRET', parsed.data.COOKIE_SECRET]
+        ,['PLATFORM_JWT_ACCESS_SECRET', parsed.data.PLATFORM_JWT_ACCESS_SECRET]
+        ,['PLATFORM_JWT_REFRESH_SECRET', parsed.data.PLATFORM_JWT_REFRESH_SECRET]
     ].filter(([, value]) => !value || value.length < 32 || /development|change-me|replace-with/i.test(value));
     if (insecureSecrets.length) {
         console.error(`Production secrets must be unique random values of at least 32 characters: ${insecureSecrets.map(([name]) => name).join(', ')}`);

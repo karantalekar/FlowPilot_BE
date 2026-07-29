@@ -10,6 +10,7 @@ const logger_1 = require("../config/logger");
 const smtpPassword = env_1.env.SMTP_HOST?.includes('gmail')
     ? env_1.env.SMTP_PASS?.replace(/\s+/g, '')
     : env_1.env.SMTP_PASS;
+const resendFrom = env_1.env.RESEND_FROM_EMAIL || env_1.env.EMAIL_FROM;
 const transporter = env_1.env.SMTP_HOST && env_1.env.SMTP_USER && env_1.env.SMTP_PASS
     ? nodemailer_1.default.createTransport({
         host: env_1.env.SMTP_HOST,
@@ -21,8 +22,32 @@ const transporter = env_1.env.SMTP_HOST && env_1.env.SMTP_USER && env_1.env.SMTP
         socketTimeout: env_1.env.SMTP_TIMEOUT_MS
     })
     : null;
+async function sendWithResend(to, subject, html) {
+    if (!env_1.env.RESEND_API_KEY)
+        return false;
+    const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${env_1.env.RESEND_API_KEY}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ from: resendFrom, to, subject, html })
+    });
+    if (response.ok)
+        return true;
+    const body = await response.text().catch(() => '');
+    logger_1.logger.error(`Resend email failed: ${subject} -> ${to}`, { status: response.status, body });
+    return false;
+}
 exports.emailService = {
     async send(to, subject, html, attachments = []) {
+        try {
+            if (await sendWithResend(to, subject, html))
+                return true;
+        }
+        catch (error) {
+            logger_1.logger.error(`Resend email failed: ${subject} -> ${to}`, error);
+        }
         if (!transporter) {
             logger_1.logger.info(`Email skipped: ${subject} -> ${to}`);
             return false;

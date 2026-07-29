@@ -50,6 +50,7 @@ Optional integrations:
 - `GEMINI_API_KEY` for live AI responses (`GEMINI_MODEL` defaults to `gemini-2.5-flash`)
 - `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, `RAZORPAY_PLAN_PRO`, `RAZORPAY_PLAN_BUSINESS`
 - SMTP settings for real email delivery
+- `RESEND_API_KEY` and `RESEND_FROM_EMAIL` for HTTP email delivery on hosts that block SMTP
 - Google OAuth settings for Passport callback support
 
 ## API Layout
@@ -140,6 +141,8 @@ SMTP_HOST=
 SMTP_PORT=587
 SMTP_USER=
 SMTP_PASS=
+RESEND_API_KEY=
+RESEND_FROM_EMAIL=
 EMAIL_FROM=no-reply@example.com
 
 UPLOAD_DIR=uploads

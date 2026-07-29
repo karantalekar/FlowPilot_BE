@@ -14,6 +14,10 @@ const organizationSchema = new mongoose_1.Schema({
         default: 'trialing'
     },
     razorpaySubscriptionId: String,
+    platformStatus: { type: String, enum: ['active', 'suspended', 'deleted'], default: 'active', index: true },
+    suspendedAt: Date,
+    suspensionReason: String,
+    deletedAt: Date,
     usage: {
         aiMessages: { type: Number, default: 0 },
         documents: { type: Number, default: 0 },

@@ -11,7 +11,7 @@ const userSchema = new mongoose_1.Schema({
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: { type: String, select: false },
-    role: { type: String, enum: ['super_admin', 'admin', 'manager', 'employee'], default: 'employee' },
+    role: { type: String, enum: ['admin', 'manager', 'employee'], default: 'employee' },
     provider: { type: String, enum: ['local', 'google'], default: 'local' },
     organization: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Organization' },
     isEmailVerified: { type: Boolean, default: false },
