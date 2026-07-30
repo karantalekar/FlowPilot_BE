@@ -35,8 +35,10 @@ const invoiceSchema = new Schema({
     subscription: { type: Schema.Types.ObjectId, ref: 'Subscription' }, payment: { type: Schema.Types.ObjectId, ref: 'PlatformPayment' },
     status: { type: String, enum: ['draft', 'issued', 'paid', 'unpaid', 'void'], default: 'draft', index: true },
     currency: { type: String, default: 'INR' }, subtotal: Number, tax: Number, total: Number, dueAt: Date, paidAt: Date,
-    lineItems: [{ description: String, quantity: Number, unitPrice: Number, amount: Number }]
+    lineItems: [{ description: String, quantity: Number, unitPrice: Number, amount: Number }],
+    sentAt: Date, recipients: [String]
 }, { timestamps: true });
+invoiceSchema.index({ payment: 1 }, { unique: true, sparse: true });
 const activitySchema = new Schema({
     actor: { type: Schema.Types.ObjectId, ref: 'PlatformAdmin', required: true, index: true },
     action: { type: String, required: true, index: true }, entity: { type: String, required: true },

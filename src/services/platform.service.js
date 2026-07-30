@@ -9,6 +9,7 @@ const { User } = require("../models/user.model");
 const { ApiError } = require("../utils/api-error");
 const { hashToken, signPlatformAccessToken, signPlatformRefreshToken, verifyPlatformRefreshToken } = require("../utils/tokens");
 const { getPagination } = require("../utils/pagination");
+const { invoiceService } = require("./invoice.service");
 
 const safeAdmin = admin => ({ id: admin.id, name: admin.name, email: admin.email, role: admin.role, lastLoginAt: admin.lastLoginAt });
 const authPayload = admin => ({ adminId: admin.id, role: admin.role, sessionVersion: admin.sessionVersion || 0 });
@@ -142,6 +143,7 @@ exports.platformService = {
         if (input.decision === 'verified' && item.plan) {
             await Organization.findByIdAndUpdate(item.organization, { plan: item.plan, subscriptionStatus: 'active' });
         }
+        if (input.decision === 'verified') await invoiceService.createAndSendForPayment(item);
         await audit(admin.id, input.decision === 'verified' ? 'PAYMENT_VERIFIED' : 'PAYMENT_REJECTED', 'PlatformPayment', item._id, context, { reason: input.reason, transactionId: item.transactionId, payer: item.payer, plan: item.plan });
         return item.populate('organization payer');
     },

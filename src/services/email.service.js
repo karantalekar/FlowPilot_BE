@@ -22,7 +22,7 @@ const transporter = env_1.env.SMTP_HOST && env_1.env.SMTP_USER && env_1.env.SMTP
         socketTimeout: env_1.env.SMTP_TIMEOUT_MS
     })
     : null;
-async function sendWithResend(to, subject, html) {
+async function sendWithResend(to, subject, html, attachments = []) {
     if (!env_1.env.RESEND_API_KEY)
         return false;
     const response = await fetch('https://api.resend.com/emails', {
@@ -31,7 +31,15 @@ async function sendWithResend(to, subject, html) {
             Authorization: `Bearer ${env_1.env.RESEND_API_KEY}`,
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ from: resendFrom, to, subject, html })
+        body: JSON.stringify({
+            from: resendFrom, to, subject, html,
+            attachments: attachments.filter(item => item.content).map(item => ({
+                filename: item.filename,
+                content: Buffer.isBuffer(item.content) ? item.content.toString('base64') : item.content,
+                ...(item.contentType ? { content_type: item.contentType } : {}),
+                ...(item.cid ? { content_id: item.cid } : {})
+            }))
+        })
     });
     if (response.ok)
         return true;
@@ -42,7 +50,7 @@ async function sendWithResend(to, subject, html) {
 exports.emailService = {
     async send(to, subject, html, attachments = []) {
         try {
-            if (await sendWithResend(to, subject, html))
+            if (await sendWithResend(to, subject, html, attachments))
                 return true;
         }
         catch (error) {
